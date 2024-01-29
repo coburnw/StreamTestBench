@@ -4,8 +4,17 @@ Delta-Sigma ADC Model changes
 
 ## [Unreleased]
 
+### 2024-1-19 (coburnw)
+- pip installable
+- added generic processing blocks
+- converted dsm functions to stream blocks
+- moved to event based stream paradigm
+- re-partitioned into classes
+- added Affero GNU-3 or later licence
+- forked and renamed repository StreamTestBench
 
-### Changed
+###
+### Changed - 2018-11-19 (Harnesser)
 - Removed some long-runtime bugs in MASH models
 - Renamed old unscaled models to `_unscaled`
 - Scaled existing models so that internal 'analog' node
@@ -13,7 +22,7 @@ Delta-Sigma ADC Model changes
 - Plot FFT with no windowing, and with log x-scale
 - Calculate SNR within baseband and add to title of FFT
 
-## [0.0.1] - 2018-11-19
+## [0.0.1] - 2018-11-19 (Harnesser)
 ### Added
 - Waveform plots
 - FFT of bitstream
