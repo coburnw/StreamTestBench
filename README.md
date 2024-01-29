@@ -2,8 +2,8 @@
 A Python Test Bench for prototyping and visualizing stream-based
 Signal Processing blocks.
 
-<p style="text-align: center;">
-  <img src="doc/screen_shot.png" alt="isolated" width="400" title="Screen Shot"/>
+<p align="center">
+  <img src="doc/screen_shot.png" width="60%" alt="isolated" title="Screen Shot"/>
 </p>
 
 While exploring some simple signal processing concepts
@@ -94,7 +94,6 @@ without which I would still be downloading to flash and cursing with
 each slip of the scope probe.
 
 # todo
----------------
 * Add true integer support to the Stream class
 * Over Sampling Ratio is erratically supported
 * Investigate allowing stream meta change in gui
