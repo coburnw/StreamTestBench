@@ -6,7 +6,7 @@
 # Copyright (c) 2018 Harnesser@github
 # MIT License
 
-import numpy as np
+# import numpy as np
 
 from matplotlib.widgets import Slider, RadioButtons
 
@@ -20,9 +20,11 @@ class FunctionGenerator(bench.Panel):
         super().__init__()
         
         self.stream = template_stream.copy(name)
+        self.sfreq = None
+        self.samp = None
 
         self._shape = shape
-        self._shapes = ['sine', 'square', 'triangle', 'random']
+        self._shapes = ['sine', 'square', 'triangle', 'random', 'pulse']
 
         self._offset = offset
         self.shape = shape
@@ -44,6 +46,8 @@ class FunctionGenerator(bench.Panel):
             self.gen = waveform.TriangleWaveForm(self.stream, self._offset)
         elif shape == 'random':
             self.gen = waveform.RandomWaveForm(self.stream, self._offset)
+        elif shape == 'pulse':
+            self.gen = waveform.PulseWaveForm(self.stream, self._offset)
         else:
             err_str = "'{}'. Unrecognized waveform shape. Expected one of {}.".format(self._shape, self._shapes)
             raise ValueError(err_str)
@@ -54,9 +58,8 @@ class FunctionGenerator(bench.Panel):
     
     def place_on(self, figure):
         figs = figure.subfigures(nrows=2, ncols=2,
-                                 height_ratios=[4,1],
-                                 width_ratios=[4,1])
-                                 # wspace=0.1, hspace=0.1)
+                                 height_ratios=[4, 1],
+                                 width_ratios=[4, 1])
 
         self.xy = sinks.XYDisplay(self.stream)
         self.xy.place_on(figs[0][0])
@@ -76,7 +79,6 @@ class FunctionGenerator(bench.Panel):
         fig = figs[0][1]
         ax = fig.add_axes([0.0, 0.1, 0.9, 0.8], facecolor=axcolor)
         ax.set_facecolor(axcolor)
-        #shapes = ('sine', 'square', 'triangle', 'random')
         shape_index = self._shapes.index(self.shape)
         self.radio = RadioButtons(ax, self._shapes, active=shape_index)
         self.radio.on_clicked(self.wave_change)

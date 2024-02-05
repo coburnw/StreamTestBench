@@ -58,6 +58,7 @@ class WaveForm(source.Source):
 
         return self._stream
 
+
 class SineWaveForm(WaveForm):
     def amplitude_series(self, frequency):
         float_array = self.sine_series(frequency)
@@ -82,3 +83,9 @@ class RandomWaveForm(WaveForm):
         float_array = np.random.uniform(-1, 1, size=self._stream.sample_count)
         return float_array
 
+
+class PulseWaveForm(WaveForm):
+    def amplitude_series(self, frequency=None):
+        float_array = np.zeros(self._stream.sample_count)
+        float_array[int(self._stream.sample_count/2)] = 1
+        return float_array
