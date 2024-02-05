@@ -16,8 +16,7 @@ class SpectrumPanel(bench.Panel):
     def __init__(self):
         super().__init__()
         
-        self.osr = 32
-        self._window = None  # np.ones(self.stream.samples.shape)
+        self._window = None
 
         self.fig = None
         self.ax = None
@@ -59,10 +58,12 @@ class SpectrumPanel(bench.Panel):
         # input is single-sided
         # assume coherent input signal so power in 1 bin
         N = len(mg_spec)
-        # print(N)
+        #print(N)
 
         # Bandwidth
         bwi = int(np.ceil(N/osr))
+        if bwi >= N:
+            bwi = N - 1
         f_bw = mg_freqs[bwi]
 
         # total power

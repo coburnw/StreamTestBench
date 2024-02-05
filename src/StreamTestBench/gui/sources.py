@@ -16,7 +16,7 @@ import StreamTestBench.core.waveform as waveform
 
 
 class FunctionGenerator(bench.Panel):
-    def __init__(self, name, template_stream, shape='sine', offset=0):
+    def __init__(self, name, template_stream, shape='sine', offset=0, max_frequency=None):
         super().__init__()
         
         self.stream = template_stream.copy(name)
@@ -26,6 +26,7 @@ class FunctionGenerator(bench.Panel):
         self._shape = shape
         self._shapes = ['sine', 'square', 'triangle', 'random', 'pulse']
 
+        self._max_frequency = max_frequency
         self._offset = offset
         self.shape = shape
 
@@ -69,9 +70,13 @@ class FunctionGenerator(bench.Panel):
         axfreq = fig.add_axes([0.15, 0.4, 0.65, 0.2], facecolor=axcolor)
         axamp = fig.add_axes([0.15, 0.7, 0.65, 0.2], facecolor=axcolor)
 
-        f0 = 0.3 * self.gen.max_frequency
+        if self._max_frequency is None:
+            self._max_frequency = self.gen.max_frequency
+
+        f0 = 0.3 * self._max_frequency
         a0 = 0.8 * self.gen.max_amplitude
-        self.sfreq = Slider(axfreq, 'Freq', 0.0, self.gen.max_frequency*2, valinit=f0)
+
+        self.sfreq = Slider(axfreq, 'Freq', 0.0, self._max_frequency, valinit=f0)
         self.samp = Slider(axamp, 'Amp', 0.0, self.gen.max_amplitude, valinit=a0)
         self.sfreq.on_changed(self.slider_change)
         self.samp.on_changed(self.slider_change)

@@ -56,15 +56,11 @@ class Stream(Listener):
         self._name = name
         self._dt = dt
         self._N = N
-        if osr < 2:
-            # an osr of less than 2 corrupts spectrum calculations.  Perhaps this exception would
-            # be better handled there so the user could actually see the effects of that violation
-            raise ValueError('the oversampling ratio must be 2 or larger to meet the requirements of Mr Nyquist')
         self._osr = osr
         self._n_bit = bit_depth
 
-        tmax = self.delta_t + self.sample_count * self.delta_t
-        self._time_series = np.arange(self.delta_t, tmax, self.delta_t)
+        t_max = self.delta_t + self.sample_count * self.delta_t
+        self._time_series = np.arange(self.delta_t, t_max, self.delta_t)
         self._samples = np.zeros(self.sample_count)
 
         return
@@ -189,9 +185,9 @@ class Stream(Listener):
     def max_frequency(self):
         """
         Returns:
-            (float): maximum frequency accounting for Over Sampling Ratio.
+            (float): nyquist frequency accounting for Over Sampling Ratio.
         """
-        return (1/self.delta_t) / self.osr
+        return 1/(self.delta_t*2) / self.osr
 
 
 class Streams(Listener):
