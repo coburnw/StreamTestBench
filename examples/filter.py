@@ -23,33 +23,36 @@ def reload():
 if __name__ == '__main__':
 
     # assign stream parameters
-    fc = 1000      # frequency of interest in hz
-    osr = 32       # over sampling ratio. number of samples per cycle of fc
-    dt = 1/fc/osr  # time in seconds between samples
-    N = 2048       # stream sample count
-    n_bit = 0      # integer sample resolution in number of bits, 0=float
+    fc = 60            # frequency of interest in hz
+    osr = 32           # over sampling ratio. (f_sampling / f_nyquist)
+    dt = 1/(fc*2)/osr  # sample interval accounting for both nyquist and osr
+    N = 2048           # stream sample count
+    n_bit = 0          # integer sample resolution in number of bits, 0=float
 
     # the stream all others are based on
     stream_template = stream.Stream('default', dt, N, osr, n_bit)
 
     # configure sources
-    signal = sources.FunctionGenerator('Signal', stream_template, offset=0.0)
+    signal = sources.FunctionGenerator('Signal', stream_template, offset=0.0, max_frequency=2*fc)
     signal.shape = 'sine'
     
     noise = sources.FunctionGenerator('Noise', stream_template)
     noise.shape = 'random'
 
     # --- wire in our dut process
+    channel = signal # math.Add('S+N', signal.stream, noise.stream)
+
+    valstep = [0,1,2,3,4,5,6,7,8]
+    filter_setting = parameters.SliderParameter('Window Factor', min_val=0, max_val=8, valstep=valstep)
+    dut = filters.IntegerIIR('filtered', channel.stream, filter_setting.parameter)
+
+    # filter_setting = parameters.SliderParameter('Cutoff Frequency', 100, 5000)
+    # dut = filters.FloatIIR('filtered', channel.stream, filter_setting.parameter)
+
     testpoints = stream.Streams('sig+noise')
     testpoints.append(signal.stream)
     testpoints.append(noise.stream)
-    
-    channel = math.Add('channel', signal.stream, noise.stream)
     testpoints.append(channel.stream)
-
-    cutoff_frequency = parameters.SliderParameter('Cutoff Frequency', 100, 1000)
-    dut = filters.FloatIIR('filtered', channel.stream, cutoff_frequency.parameter)
-
     testpoints.append(dut.stream)
 
     # configure sinks
@@ -67,7 +70,7 @@ if __name__ == '__main__':
     test_bench.append(top_shelf)
 
     mid_shelf = bench.Shelf('Process', height=1)
-    mid_shelf.append(cutoff_frequency, width=0.20)
+    mid_shelf.append(filter_setting, width=0.20)
     mid_shelf.append(tp1, width=1.0)
     test_bench.append(mid_shelf)
 

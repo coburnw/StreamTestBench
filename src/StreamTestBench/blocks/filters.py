@@ -10,6 +10,13 @@ import StreamTestBench.core.block as block
 class IntegerIIR(block.Block):
     # https://electronics.stackexchange.com/a/30384
     def __init__(self, name, input_stream, filter_factor):
+        """
+
+        Args:
+            name (str): filter name
+            input_stream (Stream): data to filter
+            filter_factor (Parameter): number of samples to filter over as a power of two
+        """
         super().__init__('First Order Integer IIR')
         
         self.input_stream = input_stream
@@ -18,16 +25,27 @@ class IntegerIIR(block.Block):
 
         # ask input_stream to alert us to any updates
         self.input_stream.add_listener(self)
+        self.filter_factor.add_listener(self)
 
         return
+
+    @property
+    def corner_frequency(self):
+        window_length = 2**self.filter_factor.value
+        return 1/(window_length * self.input_stream.delta_t * 2 * np.pi)
+
+    @property
+    def window_length(self):
+        return 2**self.filter_factor.value
 
     def process(self, ignored_stream):
         filter_value = 0.001
 
+        print('win_len =', self.window_length, ' tc(ms) =', self.window_length*self.input_stream.delta_t, ' fc =', self.corner_frequency)
         self.result_stream.samples[0] = filter_value
 
         for i in range(1, self.input_stream.sample_count):
-            filter_value += (self.input_stream.samples[i] - filter_value) / self.filter_factor
+            filter_value += (self.input_stream.samples[i] - filter_value) / self.window_length
             self.result_stream.samples[i] = filter_value
 
         return self.result_stream
