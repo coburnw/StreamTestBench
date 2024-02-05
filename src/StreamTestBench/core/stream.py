@@ -50,18 +50,27 @@ class Stream(Listener):
     change by calling its update_listeners method when the change is complete. 
     """
     
-    def __init__(self, name, dt, N, osr, bit_depth):
+    def __init__(self, name, dt, N, osr, dtype=np.float64):
+        """
+
+        Args:
+            name (str): A stream title used in plots or debug messages
+            dt (float): sample interval in secons
+            N (int): total number of samples
+            osr (float): over sampling ratio (f_sample/f_nyquist)
+            dtype (np.dtype): the data type of the individual samples
+        """
         super().__init__()
         
         self._name = name
         self._dt = dt
         self._N = N
         self._osr = osr
-        self._n_bit = bit_depth
+        self._dtype = dtype
 
         t_max = self.delta_t + self.sample_count * self.delta_t
         self._time_series = np.arange(self.delta_t, t_max, self.delta_t)
-        self._samples = np.zeros(self.sample_count)
+        self._samples = np.zeros(self.sample_count, dtype=dtype)
 
         return
 
@@ -98,7 +107,7 @@ class Stream(Listener):
         Returns:
             (Stream): A copy of self with samples initialized to zero.
         """
-        new_stream = type(self)(new_name, self._dt, self._N, self._osr, self._n_bit)
+        new_stream = type(self)(new_name, self._dt, self._N, self._osr, self._dtype)
         new_stream._name = new_name
 
         return new_stream
@@ -110,6 +119,14 @@ class Stream(Listener):
             (str): Stream name
         """
         return self._name
+
+    @property
+    def dtype(self):
+        """
+        Returns:
+            (int): dtype of sample array.
+        """
+        return self._samples.dtype
 
     @property
     def time_series(self):
@@ -131,7 +148,10 @@ class Stream(Listener):
     def samples(self, samples):
         if len(samples) != self._N:
             raise ValueError('samples length != time_series length') 
-        
+
+        if samples.dtype != self.dtype:
+            raise ValueError('new samples datatype ({}) does not match existing samples datatype ({})'.format(samples.dtype, self.samples.dtype))
+
         self._samples = samples
 
         return
@@ -153,14 +173,6 @@ class Stream(Listener):
         return self._N
     
     @property
-    def bit_count(self):
-        """
-        Returns:
-            (int): resolution of each sample in number of bits.  0 for float (default).
-        """
-        return self._n_bit
-
-    @property
     def osr(self):
         """
         Returns:
@@ -174,13 +186,33 @@ class Stream(Listener):
         Returns:
             (float): Full scale value in positive direction. Typically +1.0 for float.
         """
-        fs = 1.0
-        
-        if self.bit_count > 0:
-            fs = 2**(self.bit_count - 1)  # account for sign bit
+
+        if self.dtype.kind == 'f':
+            fs = 1.0
+        elif self.dtype.kind == 'i':
+            fs = 2**(self.dtype.itemsize * 8 - 1)
+        elif self.dtype.kind == 'u':
+            fs = 2 ** (self.dtype.itemsize * 8)
+        else:
+            raise TypeError('unrecognized sample type')
 
         return fs
-            
+
+    @property
+    def extents(self):
+        """
+        The total possible range for this data type
+
+        Returns:
+            (float): possible extents of data type
+        """
+        if self.dtype.kind == 'u':
+            extents = self.full_scale
+        else:
+            extents = 2 * self.full_scale
+
+        return extents
+
     @property
     def max_frequency(self):
         """

@@ -30,31 +30,38 @@ class WaveForm(source.Source):
         return self._offset
 
     def sine_series(self, frequency):
-        # Many periodic signals are derived from a sine. compute a sine series with peak value of full-scale
-        float_array = np.sin(self.phase_series(frequency)) * self._stream.full_scale
+        # Many periodic signals are derived from a sine. compute a sine series with range +/- 1
+        float_array = np.sin(self.phase_series(frequency))
         return float_array
 
     def amplitude_series(self, frequency):
+        """
+        calculate a proto waveform specific to this generator.
+
+        Args:
+            frequency: Waveform frequency
+        Returns:
+            (numpy float array): array of amplitude values with range of +/- 1
+        """
         raise NotImplemented
 
     def generate(self, frequency, amplitude):
-        # frequency in cycles per second
-        # amplitude in fraction of full-scale
+        """
+        Generates a waveform given its frequency and amplitude
+
+        Args:
+            frequency: frequency of waveform in Hertz
+            amplitude: scale value of waveform with range of 0 to full_scale
+
+        Returns:
+            (Stream): the resulting waveform (uint broken)
+        """
         self._frequency = frequency
         self._amplitude = amplitude
 
-        # compute an input signal with peak value of full-scale
+        # compute an input signal with peak value of full-scale. cast to output array dtype
         float_array = self.amplitude_series(frequency)
-
-        if self._stream.bit_count == 0:
-            # float scale to amplitude
-            v_array = float_array * self._amplitude + self._offset
-        else:
-            # use integer math to scale to amplitude
-            int_array = float_array.astype(int) * int(self._amplitude)
-            v_array = np.right_shift(int_array, self._stream.bit_count)
-
-        self._stream.samples = v_array
+        np.multiply(float_array, self._amplitude, out=self._stream.samples, casting='unsafe')
 
         return self._stream
 

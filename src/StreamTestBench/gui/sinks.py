@@ -160,8 +160,10 @@ class XYDisplay(bench.Panel):
         axplot = self.fig.add_subplot()
         axplot.set_title(self.stream.name)
 
-        fs = self.stream.full_scale * 1.1  # give a little margin
-        axplot.set_ylim(bottom=-fs, top=fs)
+        top = self.stream.full_scale * 1.1  # give a little margin
+        bottom = self.stream.full_scale - self.stream.extents * 1.1
+
+        axplot.set_ylim(bottom=bottom, top=top)
         self.trace, = axplot.step(self.stream.time_series,
                                   self.stream.samples,
                                   lw=2, color='red')
@@ -204,18 +206,18 @@ class TestPoints(bench.Panel):
         
         # determine row spacing
         # axplot.set_xlim(0, Tmax)
-        dmin = -2  # data.min()
-        dmax = 2  # data.max()
+        dmin = 2 * (self.streams[0].full_scale - self.streams[0].extents)
+        dmax = 2 * self.streams[0].full_scale
         self.delta_row = (dmax - dmin) * 0.7  # Crowd them a bit.
 
-        numRows = len(self.streams)
+        num_rows = len(self.streams)
         y0 = dmin
-        y1 = (numRows - 1) * self.delta_row + dmax
+        y1 = (num_rows - 1) * self.delta_row + dmax
         
         self.curves = []
         names = []
         tick_locations = []
-        for i in range(numRows):
+        for i in range(num_rows):
             names.append(self.streams[i].name)
             tick_locations.append(i*self.delta_row)
 
@@ -242,4 +244,3 @@ class TestPoints(bench.Panel):
         self.fig.canvas.draw_idle()
         
         return
-    
