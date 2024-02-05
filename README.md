@@ -1,6 +1,6 @@
 # StreamTestBench
 A Python Test Bench for prototyping and visualizing stream-based
-Signal Processing blocks.
+Signal Processing Blocks.
 
 <p align="center">
   <img src="doc/screen_shot.png" width="60%" alt="isolated" title="Screen Shot"/>
@@ -15,8 +15,7 @@ project,
 [StreamTestBench](http://github.com/coburnw/StreamTestBench) 
 attempts to isolate the signal 
 processing block under investigation from both the testbench and
-the hardware so the developer can stay focused on what is important,
-the algorithm itself.
+the hardware so the developer can stay focused on the algorithm itself.
 
 ## Instruments
 * **function generator** with sine, square, triangle, and random stream generation.
@@ -45,9 +44,9 @@ stream data.  In addition, the Stream class is derived from a Listener
 which handles the work of shuffling the streams between blocks using
 an event system, placing very few requirements on the prototype.
 
-The native stream type is float and seems well-behaved. A rather
-crass and incomplete attempt at integer support is included and 
-needs a complete overhaul. 
+Both float and integer sample data types are currently supported.
+The integer type is included to help identify rollover and rollover
+prevention techniques when porting to C on small microcontrollers.
 
 ### Parameters
 A Parameter is analogous to a single element stream.  Parameters contain
@@ -94,11 +93,9 @@ without which I would still be downloading to flash and cursing with
 each slip of the scope probe.
 
 # todo
-* Add true integer support to the Stream class
-* Over Sampling Ratio is erratically supported
+* reimplement the reload button
 * Investigate allowing stream meta change in gui
 * Generalize spectrum analyzer and validate
-* Scale internal waveforms better
 * Plot a zoom-in of the baseband
 * Calculate the SNR over the baseband
 * Allow to store a previous FFT, and plot with the
