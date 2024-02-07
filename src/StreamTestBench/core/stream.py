@@ -96,18 +96,22 @@ class Stream(Listener):
     def __len__(self):
         return self._N
 
-    def copy(self, new_name):
+    def copy(self, new_name, dtype=None):
         """ make an empty copy of a stream
         
         allocates and returns an empty copy of this stream preserving all metadata 
 
         Args:
-            new_name (str): name to assign to new stream. 
+            new_name (str): name to assign to new stream.
+            dtype (np.dtype): Data type to cast copy too.
 
         Returns:
             (Stream): A copy of self with samples initialized to zero.
         """
-        new_stream = type(self)(new_name, self._dt, self._N, self._osr, self._dtype)
+        if dtype is None:
+            dtype = self._dtype
+
+        new_stream = type(self)(new_name, self._dt, self._N, self._osr, dtype)
         new_stream._name = new_name
 
         return new_stream

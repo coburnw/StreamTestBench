@@ -5,6 +5,7 @@ import numpy as np
 # AGPL-3.0-or-later
 
 import StreamTestBench.core.block as block
+import StreamTestBench.gui.parameters as parameters
 
 
 class IntegerIIR(block.Block):
@@ -14,11 +15,14 @@ class IntegerIIR(block.Block):
 
         Args:
             name (str): filter name
-            input_stream (Stream): data to filter
+            input_stream (Stream): data to filter of integer type.
             filter_factor (Parameter): number of samples to filter over as a power of two
         """
         super().__init__('First Order Integer IIR')
-        
+
+        if input_stream.dtype.kind != 'i':
+            print('Warning: IntegerIIR() dtype of input stream is not integer.  Results may vary.')
+
         self.input_stream = input_stream
         self.result_stream = input_stream.copy(name)
         self.filter_factor = filter_factor
@@ -38,14 +42,17 @@ class IntegerIIR(block.Block):
     def window_length(self):
         return 2**self.filter_factor.value
 
-    def process(self, ignored_stream):
-        filter_value = 0.001
+    def process(self, obj):
+        if isinstance(obj, parameters.Parameter):
+            print(self.result_stream.name, 'win_len =', self.window_length,
+                  ' tc(ms) =', self.window_length*self.input_stream.delta_t,
+                  ' fc =', self.corner_frequency)
 
-        print('win_len =', self.window_length, ' tc(ms) =', self.window_length*self.input_stream.delta_t, ' fc =', self.corner_frequency)
+        filter_value = 0
         self.result_stream.samples[0] = filter_value
 
         for i in range(1, self.input_stream.sample_count):
-            filter_value += (self.input_stream.samples[i] - filter_value) / self.window_length
+            filter_value += int((self.input_stream.samples[i] - filter_value) / self.window_length)
             self.result_stream.samples[i] = filter_value
 
         return self.result_stream

@@ -28,7 +28,7 @@ if __name__ == '__main__':
     osr = 32           # over sampling ratio. (f_sampling / f_nyquist)
     dt = 1/(fc*2)/osr  # sample interval accounting for both nyquist and osr
     N = 2048           # stream sample count
-    dtype = np.float64   # numpy dtype: np.int8, np.int16, np.int32, np.float64
+    dtype = np.int8   # numpy dtype: np.int8, np.int16, np.int32, np.float64
 
     # the stream all others are based on
     stream_template = stream.Stream('default', dt, N, osr, dtype)
