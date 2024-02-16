@@ -25,18 +25,8 @@ class Source():
         return self._stream.delta_t
 
     @property
-    def max_frequency(self):
-        return self._stream.max_frequency
-
-    @property
     def max_amplitude(self):
         return self._stream.full_scale
-
-    def phase_series(self, frequency):
-        # this is an accumulation of phase thru total time_series
-        # perhaps this should be converted to a repeating phase instead?
-        float_array = 2 * np.pi * frequency * self._stream.time_series
-        return float_array
 
     def amplitude_series(self, frequency):
         raise NotImplemented

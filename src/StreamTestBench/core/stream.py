@@ -5,6 +5,7 @@
 
 import numpy as np
 
+
 class Listener(object):
     """ A list of objects to alert on change
     
@@ -133,6 +134,10 @@ class Stream(Listener):
         return self._samples.dtype
 
     @property
+    def is_integer(self):
+        return self.dtype.kind == 'i'
+
+    @property
     def time_series(self):
         """
         Returns:
@@ -183,7 +188,16 @@ class Stream(Listener):
             (int): Over Sampling Ratio. Number of samples per cycle of fc.
         """
         return self._osr
-    
+
+    @property
+    def fc(self):
+        """
+        Returns:
+            (float): Corner frequency in hertz, accounting for OverSamplingRatio
+
+        """
+        return 1/(2 * self.delta_t * self.osr)
+
     @property
     def full_scale(self):
         """
