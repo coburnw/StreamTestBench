@@ -20,8 +20,8 @@ class IntegerIIR(block.Block):
         """
         super().__init__('First Order Integer IIR')
 
-        if input_stream.dtype.kind != 'i':
-            print('Warning: IntegerIIR() dtype of input stream is not integer.  Results may vary.')
+        if input_stream.is_integer:
+            print('Warning: IntegerIIR() Significant truncation of integer streams can occur.')
 
         self.input_stream = input_stream
         self.result_stream = input_stream.copy(name)
@@ -34,9 +34,27 @@ class IntegerIIR(block.Block):
         return
 
     @property
+    def time_constant(self):
+        """
+        The time constant is the time it takes a filter to
+        reach 63% of its final value in response to a step change.
+
+        Returns: time constant in seconds of a single pole filter
+
+        """
+        return self.window_length * self.input_stream.delta_t
+
+    @property
     def corner_frequency(self):
-        window_length = 2**self.filter_factor.value
-        return 1/(window_length * self.input_stream.delta_t * 2 * np.pi)
+        """
+        The corner frequency of a filter is the point at which the
+        response is down by 3db.
+
+        Returns: the corner frequency in hertz of a single pole filter
+
+        """
+        # https://electronics.stackexchange.com/a/258534
+        return 1/(self.time_constant * 2 * np.pi)
 
     @property
     def window_length(self):
@@ -45,15 +63,20 @@ class IntegerIIR(block.Block):
     def process(self, obj):
         if isinstance(obj, parameters.Parameter):
             print(self.result_stream.name, 'win_len =', self.window_length,
-                  ' tc(ms) =', self.window_length*self.input_stream.delta_t,
+                  ' tc(ms) =', self.time_constant,
                   ' fc =', self.corner_frequency)
 
         filter_value = 0
         self.result_stream.samples[0] = filter_value
 
-        for i in range(1, self.input_stream.sample_count):
-            filter_value += int((self.input_stream.samples[i] - filter_value) / self.window_length)
-            self.result_stream.samples[i] = filter_value
+        if self.input_stream.is_integer:
+            for i in range(1, self.input_stream.sample_count):
+                filter_value += int((self.input_stream.samples[i] - filter_value) / self.window_length)
+                self.result_stream.samples[i] = filter_value
+        else:
+            for i in range(1, self.input_stream.sample_count):
+                filter_value += (self.input_stream.samples[i] - filter_value) / self.window_length
+                self.result_stream.samples[i] = filter_value
 
         return self.result_stream
 
